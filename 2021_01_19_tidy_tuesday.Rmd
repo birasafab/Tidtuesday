@@ -1,0 +1,118 @@
+---
+title: "TidyTemplate"
+date: 2021-01-18
+output: html_output
+---
+
+# TidyTuesday
+
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+
+library(tidyverse)
+library(tidytuesdayR)
+library(scales)
+theme_set(theme_light())
+library(glue)
+```
+
+# Load the weekly Data
+
+Dowload the weekly data and make available in the `tt` object.
+
+```{r Load}
+
+tt <- tt_load("2021-01-05")
+transit_cost<-tt$transit_cost %>%
+        filter(!is.na(e)) %>%
+        mutate_at(vars(start_year,end_year,real_cost), as.numeric) %>%
+        mutate(country_code = ifelse(country == "UK","GB",country),
+               country = countrycode(country_code,"iso2c","country.name"),
+               tunnel_per = tunnel / length)
+```
+ 
+
+# Readme
+
+Take a look at the readme for the weekly data to get insight on the dataset.
+This includes a data dictionary, source, and a link to an article on the data.
+
+```{r Readme, eval = interactive()}
+library(countrycode)
+transit_cost %>%
+        count(country,sort = TRUE)
+  library(ggplot2)
+
+#plotting the construction period of each line
+
+transit_cost %>%
+        filter(country == "United States") %>%
+        mutate(line = fct_reorder(line,year)) %>%
+        ggplot(aes(xmin = start_year, xmax = end_year, y = line,color = city, size = real_cost)) +
+        geom_errorbarh(height = .1)+
+        labs(x = "Year", y = "", color = "City", size =  "Real Cost")
+
+transit_cost %>%
+        ggplot(aes(cost_km_millions))+
+        geom_histogram()+
+        scale_x_continuous(label = dollar)+
+        labs(x = "Cost/KM (Millions of USD)")
+
+transit_cost %>%
+        mutate(country = fct_lump(country,8), country = fct_reorder(country,cost_km_millions,na.rm = TRUE)) %>%
+        ggplot(aes(cost_km_millions,country))+
+        geom_boxplot()+
+        scale_x_continuous(label = dollar)+
+        labs(x = "Cost/KM (Millions of USD)")
+        
+```
+
+
+# Glimpse Data
+
+Take an initial look at the format of the data available.
+
+```{r Glimpse}
+
+tt %>% 
+  map(glimpse)
+
+```
+
+# Wrangle
+
+Explore the data and process it into a nice format for plotting! Access each dataset by name by using a dollarsign after the `tt` object and then the name of the data set.
+
+```{r Wrangle}
+
+
+
+```
+
+
+# Visualize
+
+Using your processed dataset, create your unique visualization.
+
+```{r Visualize}
+
+
+  
+``` 
+
+# Save Image
+
+Save your image for sharing. Be sure to use the `#TidyTuesday` hashtag in your post on twitter! 
+
+```{r}
+
+# This will save your most recent plot
+ggsave(
+  filename = "My TidyTuesday Plot.png",
+  device = "png")
+
+```
